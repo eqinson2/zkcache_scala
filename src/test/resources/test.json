@@ -1,0 +1,69 @@
+{
+  "Table": {
+    "Id": "Eqinson",
+    "Header": [
+      {
+        "name": "string"
+      },
+      {
+        "age": "int"
+      },
+      {
+        "job": "string"
+      },
+      {
+        "hometown": "string"
+      },
+      {
+        "maintenance": "bool"
+      }
+    ],
+    "Content": [
+      {
+        "Tuple": "{eqinson1}{1}{software engineer}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson1}{2}{support engineer}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson1}{3}{test engineer}{SH}{FALSE}"
+      },
+      {
+        "Tuple": "{eqinson1}{4}{manager}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson2}{5}{admin555}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson2}{6}{HR666}{SH1}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson2}{7}{software engineer1}{SH}{FALSE}"
+      },
+      {
+        "Tuple": "{eqinson2}{8}{support engineer1}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson2}{9}{test engineer1}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson2}{5}{admin}{SH2}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson2}{6}{HR}{SH2}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson3}{7}{software engineer}{SH}{FALSE}"
+      },
+      {
+        "Tuple": "{eqinson3}{8}{support engineer}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson3}{9}{test engineer}{SH}{TRUE}"
+      },
+      {
+        "Tuple": "{eqinson3}{10}{HR admin}{SH}{TRUE}"
+      }
+    ]
+  }
+}
