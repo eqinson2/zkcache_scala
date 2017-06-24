@@ -69,13 +69,6 @@ class Insert private() extends ChangeOperator {
 		}
 		else
 			throw DmlBadSyntaxException("Error: Insert a record which already exists!")
-
-		zkCacheRWLock.writeLockTable(this.table)
-		try {
-			updateExecutionContext(this.records)
-		} finally {
-			zkCacheRWLock.writeUnLockTable(this.table)
-		}
 	}
 }
 

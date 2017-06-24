@@ -50,13 +50,6 @@ class Update extends ChangeOperator {
 				invokeSetByReflection(obj, update._1, realValue(update))
 		else
 			throw DmlBadSyntaxException("Error: Update a record which doesn't exists!")
-
-		zkCacheRWLock.writeLockTable(this.table)
-		try {
-			updateExecutionContext(this.records)
-		} finally {
-			zkCacheRWLock.writeUnLockTable(this.table)
-		}
 	}
 }
 

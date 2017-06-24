@@ -4,6 +4,7 @@ import java.lang.reflect.Method
 
 import com.ericsson.ema.tim.context.{Tab2MethodInvocationCacheMap, TableInfoContext, TableInfoMap}
 import com.ericsson.ema.tim.exception.{DmlBadSyntaxException, DmlNoSuchFieldException}
+import com.ericsson.ema.tim.lock.ZKCacheRWLockMap.zkCacheRWLock
 import com.ericsson.ema.tim.reflection.{AccessType, MethodInvocationCache}
 import com.ericsson.ema.tim.zookeeper.ZKPersistenceUtil
 import org.json.{JSONArray, JSONObject}
@@ -105,11 +106,18 @@ abstract class ChangeOperator extends Operator {
 
 	def execute(): Unit = {
 		doExecute()
-		ZKPersistenceUtil.persist(this.table, toJson(this.records).toString(3))
+		zkCacheRWLock.writeLockTable(this.table)
+		try {
+			updateExecutionContext(this.records)
+			ZKPersistenceUtil.persist(this.table, toJson(this.records).toString(3))
+		} finally {
+			zkCacheRWLock.writeUnLockTable(this.table)
+		}
 	}
 
 	def executeDebug(): Unit = {
 		doExecute()
+		updateExecutionContext(this.records)
 		println(toJson(this.records).toString(3))
 	}
 }
