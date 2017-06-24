@@ -47,6 +47,13 @@ class Delete private() extends ChangeOperator {
 			this.records = this.records.filterNot(r => eqs.forall(_ eval r))
 		else
 			throw DmlBadSyntaxException("Error: delete a record which doesn't exists!")
+
+		zkCacheRWLock.writeLockTable(this.table)
+		try {
+			updateExecutionContext(this.records)
+		} finally {
+			zkCacheRWLock.writeUnLockTable(this.table)
+		}
 	}
 }
 

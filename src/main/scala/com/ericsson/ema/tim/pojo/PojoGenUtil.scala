@@ -45,6 +45,7 @@ object PojoGenUtil {
 				field.setModifiers(Modifier.PRIVATE)
 				cc.addField(field)
 				cc.addMethod(generateListGetter(cc, kv._1, kv._2))
+				cc.addMethod(generateListSetter(cc, kv._1))
 			} match {
 				case Success(_)  =>
 				case Failure(ex) => LOGGER.error("PojoGenUtil.generateListPojo error: " + ex.getMessage)
@@ -67,6 +68,13 @@ object PojoGenUtil {
 		val getterName = "get" + fieldName.substring(0, 1).toUpperCase + fieldName.substring(1)
 		val sb = String.format("public %s %s() { if (%s == null) { %s = new java.util.ArrayList(); } return this.%s; }", fieldClass.getName, getterName, fieldName, fieldName, fieldName)
 		LOGGER.debug("generateListGetter:{}", sb)
+		CtMethod.make(sb, declaringClass)
+	}
+
+	private[this] def generateListSetter(declaringClass: CtClass, fieldName: String): CtMethod = {
+		val setterName = "set" + fieldName.substring(0, 1).toUpperCase + fieldName.substring(1)
+		val sb = String.format("public void %s(java.util.List %s) { this.%s = %s; }", setterName, fieldName, fieldName, fieldName)
+		LOGGER.debug("generateListSetter:{}", sb)
 		CtMethod.make(sb, declaringClass)
 	}
 

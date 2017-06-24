@@ -37,6 +37,7 @@ class Update extends ChangeOperator {
 		val isEmpty = eqs.foldLeft(Select().from(this.table))(_ where _).collect().isEmpty
 
 		initExecuteContext()
+
 		zkCacheRWLock.readLockTable(this.table)
 		try {
 			this.records = cloneList(this.records)
@@ -49,6 +50,13 @@ class Update extends ChangeOperator {
 				invokeSetByReflection(obj, update._1, realValue(update))
 		else
 			throw DmlBadSyntaxException("Error: Update a record which doesn't exists!")
+
+		zkCacheRWLock.writeLockTable(this.table)
+		try {
+			updateExecutionContext(this.records)
+		} finally {
+			zkCacheRWLock.writeUnLockTable(this.table)
+		}
 	}
 }
 

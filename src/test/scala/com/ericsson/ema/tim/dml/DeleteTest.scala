@@ -15,6 +15,11 @@ class DeleteTest extends TestBase {
 		Delete().from(tableName).where(Eq("name", "eqinson1")).where(Eq("age", "1")).where(Eq("job", "software engineer"))
 			.where(Eq("hometown", "SH")).where(Eq("maintenance", "TRUE")).executeDebug()
 
+		val result = Select().from(tableName).where(Eq("name", "eqinson1")).where(Eq("age", "1"))
+			.where(Eq("job", "software engineer")).where(Eq("hometown", "SH")).where(Eq("maintenance", "TRUE"))
+			.collect()
+		result.foreach(println)
+
 		intercept[DmlBadSyntaxException] {
 			Delete().from(tableName).where(Eq("name", "eqinson1111")).where(Eq("age", "1")).where(Eq("job", "software engineer"))
 				.where(Eq("hometown", "SH")).where(Eq("maintenance", "TRUE")).executeDebug()

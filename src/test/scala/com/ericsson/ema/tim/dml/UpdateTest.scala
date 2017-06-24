@@ -16,6 +16,9 @@ class UpdateTest extends TestBase {
 			.where(Eq("job", "software engineer")).where(Eq("hometown", "SH")).where(Eq("maintenance", "TRUE"))
 			.executeDebug()
 
+		val result = Select().from(tableName).where(Eq("name", "eqinson100000000000")).where(Eq("age", "100")).collect()
+		result.foreach(println)
+
 		intercept[DmlBadSyntaxException] {
 			Update().into(tableName).set("age", "100").where(Eq("name", "eqinson111")).where(Eq("age", "1"))
 				.where(Eq("job", "software engineer")).where(Eq("hometown", "SH")).where(Eq("maintenance", "TRUE"))

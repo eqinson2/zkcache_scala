@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
   * Created by eqinson on 2017/6/23.
   */
 abstract class Operator {
-	private val TUPLE_FIELD = "records"
+	protected val TUPLE_FIELD = "records"
 	protected var table: String = _
 	protected var records: List[Object] = _
 
@@ -55,8 +55,7 @@ abstract class ChangeOperator extends Operator {
 		def clone(): List[Object] = {
 			val cloneMethod: Method = original.head.getClass.getDeclaredMethod("clone")
 			cloneMethod.setAccessible(true)
-			for (anOriginal <- original)
-				yield cloneMethod.invoke(anOriginal)
+			original.map(cloneMethod invoke _)
 		}
 
 		Try(clone()).getOrElse(throw new RuntimeException("cloneList error!"))
@@ -94,6 +93,12 @@ abstract class ChangeOperator extends Operator {
 			case Some(other)             => throw DmlBadSyntaxException("unsupported data type: " + field + "," + other)
 			case None                    => throw DmlNoSuchFieldException(field)
 		}
+	}
+
+	protected def updateExecutionContext(newRecords: List[Object]): Unit = {
+		import scala.collection.JavaConverters._
+		val javaList: java.util.List[Object] = newRecords.asJava
+		invokeSetByReflection(this.context.tabledata, TUPLE_FIELD, javaList)
 	}
 
 	def doExecute(): Unit
