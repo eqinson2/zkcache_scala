@@ -37,11 +37,11 @@ class Update extends ChangeOperator {
 		val isEmpty = eqs.foldLeft(Select().from(this.table))(_ where _).collect().isEmpty
 
 		initExecuteContext()
-		zkCacheRWLock.writeLockTable(this.table)
+		zkCacheRWLock.readLockTable(this.table)
 		try {
 			this.records = cloneList(this.records)
 		} finally {
-			zkCacheRWLock.writeUnLockTable(this.table)
+			zkCacheRWLock.readUnLockTable(this.table)
 		}
 
 		if (!isEmpty)

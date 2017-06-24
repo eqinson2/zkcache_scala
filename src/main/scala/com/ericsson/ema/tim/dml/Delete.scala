@@ -37,11 +37,11 @@ class Delete private() extends ChangeOperator {
 		if (!validateDeleteOperation()) { //ensure to delete on row each tme
 			throw DmlBadSyntaxException("Error: Not specify all table fields in delete!")
 		}
-		zkCacheRWLock.writeLockTable(this.table)
+		zkCacheRWLock.readLockTable(this.table)
 		try {
 			this.records = cloneList(this.records)
 		} finally {
-			zkCacheRWLock.writeUnLockTable(this.table)
+			zkCacheRWLock.readUnLockTable(this.table)
 		}
 		if (!isEmpty)
 			this.records = this.records.filterNot(r => eqs.forall(_ eval r))
