@@ -108,8 +108,8 @@ abstract class ChangeOperator extends Operator {
 		doExecute()
 		zkCacheRWLock.writeLockTable(this.table)
 		try {
-			updateExecutionContext(this.records)
 			ZKPersistenceUtil.persist(this.table, toJson(this.records).toString(3))
+			updateExecutionContext(this.records)
 		} finally {
 			zkCacheRWLock.writeUnLockTable(this.table)
 		}
