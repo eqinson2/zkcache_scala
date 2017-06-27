@@ -6,10 +6,10 @@ import scala.collection.mutable
   * Created by eqinson on 2017/5/5.
   */
 class TableInfoMap {
-	private[this] var registry = Map[String, TableInfoContext]()
+	private[this] var registry = mutable.LinkedHashMap[String, TableInfoContext]()
 
 	def clear(): Unit = {
-		registry = Map[String, TableInfoContext]()
+		registry = mutable.LinkedHashMap[String, TableInfoContext]()
 	}
 
 	def unregister(tableName: String): Unit = {
@@ -18,7 +18,7 @@ class TableInfoMap {
 
 	def lookup(tableName: String): Option[TableInfoContext] = registry.get(tableName)
 
-	def lookupAll(): Map[String, TableInfoContext] = registry
+	def lookupAll(): mutable.LinkedHashMap[String, TableInfoContext] = registry
 
 	def registerOrReplace(tablename: String, tableMetadata: mutable.Map[String, String], tableData: Object): Unit = {
 		registry += (tablename -> TableInfoContext(tableData, tableMetadata))

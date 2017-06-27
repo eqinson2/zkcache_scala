@@ -1,7 +1,7 @@
 lazy val `sbt-release` = project in file(".")
 
 name := "zkcache"
-organization := "com.ericsson"
+organization := "com.ericsson.ema"
 scalaVersion := "2.11.7"
 
 // This forces the compiler to create a jar for this project and include that in the classpath
@@ -9,27 +9,23 @@ scalaVersion := "2.11.7"
 // This is needed in order to easily copy all jars when creating the tar.gz
 exportJars := true
 
+autoScalaLibrary in ThisBuild := false
+
 // Needed to make sbt release work when use sbt 0.13+
 updateOptions := updateOptions.value.withCachedResolution(!Option(System.getProperty("skipwithCachedResolution")).isDefined)
 
+//disablePlugins(ModuleTarPlugin)
 
 //---------------------------------------
 // Compiler directives
 //---------------------------------------
+crossPaths in ThisBuild := false
 
 // allow circular dependencies for test sources
 compileOrder in Test := CompileOrder.Mixed
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-language:implicitConversions", "-language:higherKinds", "-target:jvm-1.8")
-
-import org.dmonix.sbt.ScalaDocSettings
-
-scalacOptions in(Compile, doc) ++= ScalaDocSettings.rootDoc
-
-//this setting overrides the default sequence of files to add in packageDoc
-//it's needed in order for the copyDocAssetsTask task to execute
-mappings in(Compile, packageDoc) <<= copyDocAssetsTask
 
 //---------------------------------------
 // Configure the needed settings to be able to publish artifacts to the binary repository (e.g. ARM)
@@ -41,26 +37,17 @@ mappings in(Compile, packageDoc) <<= copyDocAssetsTask
 import com.ericsson.activation.sbt.plugin.ARMSettings
 import org.dmonix.sbt.CredentialsSettings
 
+publishArtifact in ThisBuild := false
+publishArtifact := true
+
 credentials ++= CredentialsSettings.publishCredentials
-publishTo <<= version {
-	ARMSettings.deployURL(_)
-}
-resolvers ++= ARMSettings.resolverURLs
+publishTo := ARMSettings.deployURL(version.value)
+resolvers in ThisBuild ++= ARMSettings.resolverURLs
 
-//---------------------------------------
-// packageModule related information
-//---------------------------------------
-productNumber := "CXC1737820"
-installationFiles := "installation"
-//adds the generated tar.gz to files that shall be uploaded/published
-import com.ericsson.activation.sbt.plugin.ModuleTarPlugin._
-
-addArtifact(name {
-	moduleArtifact(_)
-}, packageModuleTar)
-
-
-//---------------------------------------
+val testAndCompile = "test->test;compile->compile"
+// A configuration which is like 'compile' except it performs additional static analysis.
+// Execute static analysis via `lint:compile`
+val LintTarget = config("lint").extend(Compile)
 
 libraryDependencies ++= Seq(
 	"org.slf4j" % "slf4j-log4j12" % "1.7.5" % "provided",
@@ -73,14 +60,7 @@ libraryDependencies ++= Seq(
 )
 
 
-// this disables appending the scala version to the produced binary when deployed to Nexus
-crossPaths := false
-
-// enable publishing the main jar produced by `package`
-publishArtifact in(Compile, packageBin) := true
-
-// enable publishing the main API jar
-publishArtifact in(Compile, packageDoc) := true
-
-// enable publishing the main sources jar
-publishArtifact in(Compile, packageSrc) := true
+lazy val `zkcache`: Project = project.in(file("."))
+	.settings(Commons.settings: _*)
+	.disablePlugins(ModuleTarPlugin)
+	.configs(LintTarget)

@@ -32,5 +32,8 @@ class EqTest extends TestBase {
 		val result2: List[List[Object]] = Select("name", "age", "job", "maintenance").from(tableName).where(Eq("name", "eqinson1")).where(Eq("maintenance", "FALSE")).collectBySelectFields()
 		TestUtil.printResult(result2)
 		println
+		val result3: List[List[Object]] = Select("name", "age", "job", "maintenance").from(tableName).collectBySelectFields()
+		TestUtil.printResult(result3)
+		println
 	}
 }
