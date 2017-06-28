@@ -18,7 +18,7 @@ class TableInfoMap {
 
 	def lookup(tableName: String): Option[TableInfoContext] = registry.get(tableName)
 
-	def lookupAll(): mutable.LinkedHashMap[String, TableInfoContext] = registry
+	def lookupAllTableName(): List[String] = registry.keys.toList
 
 	def registerOrReplace(tablename: String, tableMetadata: mutable.Map[String, String], tableData: Object): Unit = {
 		registry += (tablename -> TableInfoContext(tableData, tableMetadata))
