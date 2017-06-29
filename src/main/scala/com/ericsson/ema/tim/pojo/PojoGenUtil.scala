@@ -17,7 +17,7 @@ object PojoGenUtil {
 	def generatePojo(className: String, properties: mutable.Map[String, Class[_]]): Class[_] = {
 		val cc = makeClass(className)
 		cc.addInterface(resolveCtClass(classOf[Serializable]))
-		cc.addInterface(resolveCtClass(classOf[Cloneable]))
+		cc.addInterface(resolveCtClass(classOf[java.lang.Cloneable]))
 		properties.foreach(kv => {
 			Try {
 				val field = new CtField(resolveCtClass(kv._2), kv._1, cc)

@@ -31,9 +31,8 @@ class ZKMonitor(zkConnectionManager: ZKConnectionManager) {
 		zkRootPath = Try(SystemPropertyUtil.getAndAssertProperty("com.ericsson.ema.tim.zkRootPath")).getOrElse("/TIM_POC")
 		zkConnectionManager.registerListener(new ZooKeeperConnectionStateListenerImpl)
 		Try(ZooKeeperUtil.createRecursive(getConnection, zkRootPath, null, OPEN_ACL_UNSAFE, PERSISTENT)) match {
-			case Success(_)  =>
-			case Failure(ex) => LOGGER.error("Failed to start ZKMonitor, the exception is ", ex.getMessage)
-				throw new RuntimeException(ex)
+			case Success(_)  => LOGGER.info(s"The zkpath $zkRootPath is created successfully.")
+			case Failure(ex) => LOGGER.warn(s"The zkpath $zkRootPath already exists: ", ex.getMessage)
 		}
 		loadAllTable()
 	}
