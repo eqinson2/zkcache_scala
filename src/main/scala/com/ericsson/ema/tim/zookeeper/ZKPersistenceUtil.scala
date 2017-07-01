@@ -11,7 +11,7 @@ import scala.util.{Failure, Success, Try}
   */
 object ZKPersistenceUtil {
 	private[this] val LOGGER = LoggerFactory.getLogger(ZKPersistenceUtil.getClass)
-	private[this] val zkRootPath = SystemPropertyUtil.getAndAssertProperty("com.ericsson.ema.tim.zkRootPath")
+	private[this] val zkRootPath = Try(SystemPropertyUtil.getAndAssertProperty("com.ericsson.ema.tim.zkRootPath")).getOrElse("/TIM_POC")
 
 	private[this] val zkm = ZKConnectionManager()
 
@@ -45,7 +45,7 @@ object ZKPersistenceUtil {
 	def persist(table: String, data: String): Unit = {
 		val tabPath = zkRootPath + "/" + table
 		if (!exists(tabPath))
-			throw new RuntimeException("root path " + zkRootPath + "does not exist!")
+			throw new RuntimeException("root path " + zkRootPath + " does not exist!")
 		else {
 			LOGGER.debug("set znode {}" + tabPath)
 			setNodeData(tabPath, data)
