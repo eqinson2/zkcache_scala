@@ -37,13 +37,19 @@ class ZKConnectionManager {
 
 	def init(): Unit = {
 		LOGGER.info("Start to init zookeeper connection manager.")
-		connect()
+		while (!connect()) {
+			try {
+				Thread.sleep(30 * 1000)
+			} catch {
+				case e: InterruptedException => LOGGER.debug("connect interrupted from sleep, try again...")
+			}
+		}
 		reconnectExecutor = Executors.newSingleThreadExecutor(new ZKNamedSequenceThreadFactory("ZKReconnect"))
 		reconnFuture = reconnectExecutor.submit(new Runnable {
 			override def run(): Unit = {
 				while (!Thread.currentThread.isInterrupted) {
 					try {
-						Thread.sleep(60000)
+						Thread.sleep(60 * 1000)
 						if (waitForReconnect && getConnection.isEmpty) {
 							LOGGER.info("ZK reconnection is wanted.")
 							connect()
@@ -61,15 +67,16 @@ class ZKConnectionManager {
 		})
 	}
 
-	private[this] def connect(): Unit = {
+	private[this] def connect(): Boolean = {
 		Try {
 			val watcher = new ConnectionWatcher
 			zooKeeper = new ZooKeeper(connectStr, SESSION_TIMEOUT, watcher)
 			watcher.waitUntilConnected()
 		} match {
-			case Success(_)  =>
+			case Success(_)  => true
 			case Failure(ex) => LOGGER.warn("Failed to create zookeeper connection: " + ex.getMessage)
 				zooKeeper = null
+				false
 		}
 	}
 
