@@ -5,6 +5,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 /**
   * Created by eqinson on 2017/5/26.
+	* data access lock is used in JDV
   */
 object ZKCacheDaoLockMap {
 	private[this] val instance = new ZKCacheDaoLockMap

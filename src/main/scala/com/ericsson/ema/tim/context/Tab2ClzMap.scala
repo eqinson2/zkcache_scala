@@ -2,6 +2,7 @@ package com.ericsson.ema.tim.context
 
 /**
   * Created by eqinson on 2017/5/5.
+	* tableName->class  like "Eqinson" -> com.Eqinson
   */
 class Tab2ClzMap {
 	private[this] var registry = Map[String, Class[_]]()

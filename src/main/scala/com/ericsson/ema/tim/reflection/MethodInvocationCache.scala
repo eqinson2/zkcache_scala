@@ -26,11 +26,13 @@ class MethodInvocationCache {
 		beanInfo.getPropertyDescriptors.toList.filter(property == _.getName).map(
 			p => if (accessType eq AccessType.GET) p.getReadMethod else p.getWriteMethod)
 		match {
+			//the first element in the list
 			case h :: _ => h
 			case _      => throw DmlNoSuchFieldException(property)
 		}
 	}
 
+	//bean feild, like 'records'
 	def get(clz: Class[_], field: String, accessType: AccessType.AccessType): Method = {
 		val key = new MethodInvocationKey(clz, field)
 		val store = if (accessType == AccessType.GET) getterStore else setterStore

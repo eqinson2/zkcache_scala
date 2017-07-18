@@ -25,7 +25,7 @@ trait PredicateClause extends SelectClause {
 	def eval(tuple: Object): Boolean = {
 		if (Option(valueToComp).isEmpty)
 			return false
-
+//tuple is the java bean instance
 		val fieldVal = getFiledValFromTupleByName(tuple)
 		val fieldType = operator.context.tableMetadata.get(field)
 		fieldType match {

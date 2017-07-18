@@ -4,6 +4,7 @@ import scala.collection.mutable
 
 /**
   * Created by eqinson on 2017/5/5.
+	* tablename -> TableInfoContext(tableData, tableMetadata)
   */
 class TableInfoMap {
 	private[this] var registry = mutable.LinkedHashMap[String, TableInfoContext]()

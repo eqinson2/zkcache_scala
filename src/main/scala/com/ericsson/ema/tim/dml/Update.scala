@@ -19,6 +19,7 @@ class Update extends ChangeOperator {
 		this
 	}
 
+	//use this.eqs to filter records
 	def where(eq: Eq): Update = {
 		this.eqs :+= eq
 		eq.operator = this
@@ -34,16 +35,14 @@ class Update extends ChangeOperator {
 		if (updateFields.isEmpty)
 			throw DmlBadSyntaxException("Error: missing updateFields and addFields!")
 
-		val isEmpty = eqs.foldLeft(Select().from(this.table))(_ where _).collect().isEmpty
-
 		initExecuteContext()
-
-		zkCacheRWLock.readLockTable(this.table)
-		try {
-			this.records = cloneList(this.records)
-		} finally {
-			zkCacheRWLock.readUnLockTable(this.table)
-		}
+		val isEmpty = eqs.foldLeft(Select().from(this.table))(_ where _).collect().isEmpty
+		//		zkCacheRWLock.readLockTable(this.table)
+		//		try {
+//			this.records = cloneList(this.records)
+//		} finally {
+//			zkCacheRWLock.readUnLockTable(this.table)
+//		}
 
 		if (!isEmpty)
 			for (obj <- this.records if eqs.forall(_ eval obj); update <- updateFields)

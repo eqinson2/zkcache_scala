@@ -7,13 +7,14 @@ import com.ericsson.ema.tim.dml.Insert
 import com.ericsson.ema.tim.exception.DmlBadSyntaxException
 import com.ericsson.ema.tim.reflection.{AccessType, MethodInvocationCache}
 import com.ericsson.ema.tim.zookeeper.{ZKConnectionManager, ZKMonitor, ZKPersistenceUtil}
+import com.ericsson.util.SystemPropertyUtil
 
 import scala.util.Try
 
 /**
   * Created by eqinson on 2017/5/13.
   */
-object AppMainTest extends App {
+object AppMainTest2 extends App {
 	private[this] val testFile = "test.json"
 	var context: TableInfoContext = _
 	var methodInvocationCache: MethodInvocationCache = _
@@ -21,25 +22,23 @@ object AppMainTest extends App {
 	protected var table: String = "Eqinson"
 	protected var records: List[Object] = _
 
+
+	SystemPropertyUtil.setIfNotSet("com.ericsson.ema.tim.zkconnstr","10.170.67.147:6181")
 	val zkm = ZKConnectionManager()
 	zkm.init()
 
-	val in = getClass.getResourceAsStream("/" + testFile)
-	val lines = scala.io.Source.fromInputStream(in).getLines.mkString("\n")
-	ZKPersistenceUtil.persist("Eqinson",addIdentifier(lines))
 
 	val zkMonitor = new ZKMonitor(zkm)
 	zkMonitor.start()
 
-//	initExecuteContext()
+	initExecuteContext()
 //load success
-//	records.foreach(println)
+	records.foreach(println)
 
 	//do a change
 //	ZKPersistenceUtil.persist("Eqinson",addIdentifier(lines))
 
-	Insert().into("Eqinson").add("name", "eqinson111").add("age", "1234")
-		.add("job", "software engineer").add("hometown", "SH").add("maintenance", "TRUE").execute()
+
 
 	while (!Thread.currentThread.isInterrupted)
 		try

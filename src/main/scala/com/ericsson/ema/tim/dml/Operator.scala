@@ -1,6 +1,7 @@
 package com.ericsson.ema.tim.dml
 
 import java.lang.reflect.Method
+import java.net.InetAddress
 
 import com.ericsson.ema.tim.context.{Tab2MethodInvocationCacheMap, TableInfoContext, TableInfoMap}
 import com.ericsson.ema.tim.exception.{DmlBadSyntaxException, DmlNoSuchFieldException}
@@ -24,6 +25,7 @@ abstract class Operator {
 	var methodInvocationCache: MethodInvocationCache = _
 
 	protected def initExecuteContext(): Unit = {
+		//context is TableInfoContext(tableData, tableMetadata)
 		this.context = TableInfoMap().lookup(table).getOrElse(throw DmlBadSyntaxException("Error: Selecting a " + "non-existing table:" + table))
 		this.methodInvocationCache = Tab2MethodInvocationCacheMap().lookup(table)
 		//it is safe because records must be List according to JavaBean definition
@@ -54,6 +56,7 @@ abstract class ChangeOperator extends Operator {
 			return List[Object]()
 
 		def clone(): List[Object] = {
+
 			val cloneMethod: Method = original.head.getClass.getDeclaredMethod("clone")
 			cloneMethod.setAccessible(true)
 			original.map(cloneMethod invoke _)
@@ -85,6 +88,13 @@ abstract class ChangeOperator extends Operator {
 		json
 	}
 
+	private[this] def addIdentifier(input:String):String ={
+		val result = ZKPersistenceUtil.addOn.stripMargin.concat("\n").concat(input)
+		result
+	}
+
+
+
 	protected def realValue(updateVal: (String, String)): Object = {
 		val (field, newValue) = updateVal
 		this.context.tableMetadata.get(field) match {
@@ -96,19 +106,21 @@ abstract class ChangeOperator extends Operator {
 		}
 	}
 
+	//update records in java bean, please note the jave bean inside TableInfoMap() also changed and include new value
 	protected def updateExecutionContext(newRecords: List[Object]): Unit = {
 		import scala.collection.JavaConverters._
 		val javaList: java.util.List[Object] = newRecords.asJava
 		invokeSetByReflection(this.context.tabledata, TUPLE_FIELD, javaList)
 	}
 
+
 	def doExecute(): Unit
 
 	def execute(): Unit = {
-		doExecute()
 		zkCacheRWLock.writeLockTable(this.table)
 		try {
-			ZKPersistenceUtil.persist(this.table, toJson(this.records).toString(3))
+			doExecute()
+			ZKPersistenceUtil.persist(this.table, addIdentifier(toJson(this.records).toString(3)))
 			updateExecutionContext(this.records)
 		} finally {
 			zkCacheRWLock.writeUnLockTable(this.table)

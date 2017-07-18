@@ -2,6 +2,9 @@ package com.ericsson.ema.tim.context
 
 /**
   * Created by eqinson on 2017/5/5.
+	* record table meta data.
+	* Map[String, Map[String, String]] : jsonLoader.tableName, jsonLoader.tableMetadata.toMap
+	* "Eqinson", tableMetadata: mutable.Map[String, String]
   */
 class MetaDataRegistry {
 	private[this] var registry = Map[String, Map[String, String]]()

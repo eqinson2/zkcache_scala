@@ -35,6 +35,10 @@ class ZKConnectionManager {
 
 	connectStr = Try(SystemPropertyUtil.getAndAssertProperty("com.ericsson.ema.tim.zkconnstr")).getOrElse("localhost:6181")
 
+	/**
+		* you need to invoke this init() if you want to use ZKConnectionManager
+		*
+		*/
 	def init(): Unit = {
 		LOGGER.info("Start to init zookeeper connection manager.")
 		while (!connect()) {
@@ -44,7 +48,10 @@ class ZKConnectionManager {
 				case e: InterruptedException => LOGGER.debug("connect interrupted from sleep, try again...")
 			}
 		}
+		//a single thread in the pool to reconnect
+		//ZKNamedSequenceThreadFactory is give a unique name of the thread
 		reconnectExecutor = Executors.newSingleThreadExecutor(new ZKNamedSequenceThreadFactory("ZKReconnect"))
+		//reconnect thread always running unless the thread is interrupted.
 		reconnFuture = reconnectExecutor.submit(new Runnable {
 			override def run(): Unit = {
 				while (!Thread.currentThread.isInterrupted) {
@@ -82,6 +89,7 @@ class ZKConnectionManager {
 
 	def destroy(): Unit = {
 		LOGGER.info("Start to destroy zookeeper connection manager.")
+		//gracefully cancel the task and then stop the reconnect thread pool
 		reconnFuture.cancel(false)
 		reconnectExecutor.shutdownNow
 		try {
@@ -97,6 +105,7 @@ class ZKConnectionManager {
 
 	def getConnection: Option[ZooKeeper] = Option(zooKeeper)
 
+	//Listener for zookeeper reconnected, will trigger loadAllTable() in ZKMonitor
 	def registerListener(listener: ZKConnectionChangeWatcher): Unit = {
 		listeners :+= listener
 	}
@@ -107,6 +116,11 @@ class ZKConnectionManager {
 
 	private[this] def getSessionId: String = getConnection.map(z => "0x" + java.lang.Long.toHexString(z.getSessionId)).getOrElse("NO-SESSION")
 
+
+	/**
+		* the default watch of ZKConnectionManager
+		* this watcher only handle the session related event, like reconnection or session expire.
+		*/
 	private[this] class ConnectionWatcher extends Watcher {
 		private[this] val latch = new CountDownLatch(1)
 		private[this] var connectionHasBeenEstablished = false
@@ -120,7 +134,8 @@ class ZKConnectionManager {
 						LOGGER.error("Failed to reconnect the zookeeper server")
 						waitForReconnect = true
 					}
-				case Event.KeeperState.SyncConnected =>
+				 // filter node change event which also contians Event.KeeperState
+				case Event.KeeperState.SyncConnected if((Event.EventType.None eq event.getType) && null == event.getPath) =>
 					LOGGER.info("Got connected event for session [{}] to zookeeper", getSessionId)
 					if (connectionHasBeenEstablished)
 						notifyListener(State.RECONNECTED)
@@ -152,6 +167,11 @@ class ZKConnectionManager {
 	}
 
 }
+
+/**
+	* ZKConnectionManager is a thread safe singleton
+	*
+	* */
 
 object ZKConnectionManager {
 	private[this] var instance: ZKConnectionManager = _

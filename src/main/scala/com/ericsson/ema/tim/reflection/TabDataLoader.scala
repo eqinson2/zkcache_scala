@@ -17,6 +17,7 @@ case class TabDataLoader(private val classToLoad: String, private val jloader: J
 	private[this] val LOGGER = LoggerFactory.getLogger(classOf[TabDataLoader])
 
 	private[this] val TUPLE_FIELD = "records"
+	//cache:MethodInvocationCache, create when first time load a table
 	private[this] val cache = Tab2MethodInvocationCacheMap().lookup(jloader.tableName)
 
 	private[this] def realFieldVal(field: FieldInfo): Object = {
@@ -30,6 +31,7 @@ case class TabDataLoader(private val classToLoad: String, private val jloader: J
 		}
 	}
 
+	//records = List[EqinsonData]
 	def loadData(): Object = {
 		LOGGER.info("=====================reflect class: {}=====================", classToLoad)
 		val clz = Tab2ClzMap().lookup(jloader.tableName).getOrElse(Thread.currentThread.getContextClassLoader.loadClass(classToLoad))
@@ -37,10 +39,13 @@ case class TabDataLoader(private val classToLoad: String, private val jloader: J
 		val obj = clz.newInstance
 		val tupleListType = loadTupleClz(obj)
 		LOGGER.debug("init {}", tupleListType)
+		//getter:java.lang.reflect.Method
 		val getter = cache.get(clz, TUPLE_FIELD, AccessType.GET)
 		val records = getter.invoke(obj).asInstanceOf[java.util.List[Object]]
 		jloader.tupleList.foreach(row => {
+			//new instance of ***Data like EqinsonData
 			val tuple = tupleListType.newInstance.asInstanceOf[Object]
+			//field is FieldInfo, row is List[FieldInfo].size == column size
 			row.foreach(field => TabDataLoaderUtil.fillInField(tuple, field.fieldName, realFieldVal(field)))
 			records.add(tuple)
 		})
@@ -63,6 +68,7 @@ object TabDataLoaderUtil {
 		val beanInfo = Introspector.getBeanInfo(tuple.getClass)
 		val propertyDescriptors = beanInfo.getPropertyDescriptors
 		propertyDescriptors.toList.filter(field == _.getName) match {
+				//the first element in the list
 			case h :: _ =>
 				LOGGER.debug("fillInField : {} = {}", field, value: Any)
 				val setter = h.getWriteMethod

@@ -47,20 +47,22 @@ class Insert private() extends ChangeOperator {
 		instance.getClass.getClassLoader.loadClass(tupleClassName)
 	}
 
+	//the lock now is in ChangeOperator
 	override def doExecute(): Unit = {
 		if (addFields.isEmpty)
 			throw DmlBadSyntaxException("Error: missing addFields!")
 
+		initExecuteContext()
+		//check if inserted result is exits in current records
+		//f is addFields's tuple, c is selector
 		val isEmpty = addFields.foldLeft(Select().from(this.table))((c, f) => c.where(Eq(f._1, f._2))).collect().isEmpty
 
-		initExecuteContext()
-
-		zkCacheRWLock.readLockTable(this.table)
-		try {
-			this.records = cloneList(this.records)
-		} finally {
-			zkCacheRWLock.readUnLockTable(this.table)
-		}
+//		zkCacheRWLock.readLockTable(this.table)
+//		try {
+//			this.records = cloneList(this.records)
+//		} finally {
+//			zkCacheRWLock.readUnLockTable(this.table)
+//		}
 
 		if (isEmpty) {
 			if (!validateAddOperation())

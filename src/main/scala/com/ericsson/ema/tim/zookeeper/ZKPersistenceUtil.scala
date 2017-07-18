@@ -1,5 +1,7 @@
 package com.ericsson.ema.tim.zookeeper
 
+import java.net.InetAddress
+
 import com.ericsson.util.SystemPropertyUtil
 import org.apache.zookeeper.KeeperException
 import org.slf4j.LoggerFactory
@@ -15,11 +17,14 @@ object ZKPersistenceUtil {
 
 	private[this] val zkm = ZKConnectionManager()
 
+	//get zookeeper connection, throw exception if connection is null in ZKConnectionManager
 	private[this] def getConnection = zkm.getConnection.getOrElse(throw new KeeperException.ConnectionLossException)
 
 	private[this] def isConnected = getConnection.getState.isConnected
 
 	private[this] def exists(path: String): Boolean = Try(getConnection.exists(path, false) != null).getOrElse(false)
+
+	var addOn: String = getIdentifier
 
 	private[this] def setNodeData(path: String, data: String) = synchronized {
 		if (isConnected)
@@ -33,7 +38,8 @@ object ZKPersistenceUtil {
 	private def getNodeData(path: String) = {
 		if (isConnected)
 			Try {
-				val byteData = getConnection.getData(path, true, null)
+				//we don't need to register watcher for this get, since it is for debug purpose
+				val byteData = getConnection.getData(path, false, null)
 				new String(byteData, "utf-8")
 			} match {
 				case Success(result) => result
@@ -52,5 +58,15 @@ object ZKPersistenceUtil {
 		}
 		if (LOGGER.isDebugEnabled)
 			LOGGER.debug("{} data: {}", tabPath, getNodeData(tabPath): Any)
+	}
+
+	//getIdentifier is the first line of the zonde.
+	//it records the pid and host who has this zkcache.
+	private[this] def getIdentifier(): String = {
+		import java.lang.management.ManagementFactory
+		val pid: String = ManagementFactory.getRuntimeMXBean.getName
+		val addr: InetAddress = InetAddress.getLocalHost;
+		val result = pid + "@" + addr.getHostName + "endHead"
+		result
 	}
 }

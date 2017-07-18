@@ -73,9 +73,11 @@ class Select private() extends Operator with Selector with ChainableOrderings {
 	}
 
 	private[this] def internalExecute(): List[Object] = {
+		//get all records java.util.List[Object] from java bean
 		initExecuteContext()
 		var result = records
 		if (predicates.nonEmpty)
+			//the input r is the instance of java bean
 			result = records.filter(internalPredicate())
 		if (orderBys.nonEmpty)
 			result = result.sorted(orderBys.map(_.ordering()).reduce(_ thenOrdering _))
@@ -87,6 +89,7 @@ class Select private() extends Operator with Selector with ChainableOrderings {
 	}
 
 	private[this] def internalPredicate(): Object => Boolean = {
+//r => eqs.forall(_ eval r)
 		r => predicates.map(_.eval(r)).reduce(_ && _)
 	}
 

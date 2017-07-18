@@ -4,6 +4,8 @@ import com.ericsson.ema.tim.reflection.MethodInvocationCache
 
 /**
   * Created by eqinson on 2017/5/5.
+	* tableName -> tim.reflection.MethodInvocationCache
+	* init in TabDataLoader
   */
 class Tab2MethodInvocationCacheMap {
 	private[this] var map = Map[String, MethodInvocationCache]()

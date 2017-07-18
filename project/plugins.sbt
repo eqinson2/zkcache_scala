@@ -8,7 +8,8 @@ resolvers ++= Seq(
 val pluginRepo = "https://arm.epk.ericsson.se/artifactory/"
 resolvers ++= Seq(
 	"ARM Snapshots" at pluginRepo + "/proj-ema-dev-local",
-	"ARM Releases" at pluginRepo + "/proj-ema-release-local"
+	"ARM Releases" at pluginRepo + "/proj-ema-release-local",
+	"JBoss" at "https://repository.jboss.org/"
 )
 
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.1.0")

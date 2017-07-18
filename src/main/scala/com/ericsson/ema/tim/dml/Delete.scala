@@ -18,6 +18,7 @@ class Delete private() extends ChangeOperator {
 		this
 	}
 
+	//use this.eqs to filter records
 	def where(eq: Eq): Delete = {
 		this.eqs :+= eq
 		eq.operator = this
@@ -30,19 +31,21 @@ class Delete private() extends ChangeOperator {
 		listOfDeleteFields.forall(listOfTableFields contains _) && listOfTableFields.forall(listOfDeleteFields contains _)
 	}
 
+	//remove the java bean record which need to be deleted
+	//the lock now is in ChangeOperator
 	override def doExecute(): Unit = {
-		val isEmpty = eqs.foldLeft(Select().from(this.table))(_ where _).collect().isEmpty
 
 		initExecuteContext()
+		val isEmpty = eqs.foldLeft(Select().from(this.table))(_ where _).collect().isEmpty
 		if (!validateDeleteOperation()) { //ensure to delete on row each tme
 			throw DmlBadSyntaxException("Error: Not specify all table fields in delete!")
 		}
-		zkCacheRWLock.readLockTable(this.table)
-		try {
-			this.records = cloneList(this.records)
-		} finally {
-			zkCacheRWLock.readUnLockTable(this.table)
-		}
+//		zkCacheRWLock.readLockTable(this.table)
+//		try {
+//			this.records = cloneList(this.records)
+//		} finally {
+//			zkCacheRWLock.readUnLockTable(this.table)
+//		}
 		if (!isEmpty)
 			this.records = this.records.filterNot(r => eqs.forall(_ eval r))
 		else

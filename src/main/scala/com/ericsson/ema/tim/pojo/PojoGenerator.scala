@@ -15,11 +15,14 @@ object PojoGenerator {
 	val pojoPkg: String = PojoGenerator.getClass.getPackage.getName
 
 	private[this] def generateTupleClz(table: Table): Unit = {
+		//mutable.LinkedHashMap[String, Class[_]]() is the start value
+		//table.records.tuples is List[NameType] = List[NameType]()
 		val props = table.records.tuples.foldLeft(mutable.LinkedHashMap[String, Class[_]]())((m, n) => {
 			m.put(n.theName, typesForTuple.getOrElse(n.theType, throw new RuntimeException("bug: illegal typesForTuple")))
 			m
 		})
 
+		//props is the name -> classOf[type] LinkedHashMap
 		if (LOGGER.isDebugEnabled)
 			props.foreach(kv => LOGGER.debug("name: {}, type: {}", kv._1, kv._2: Any))
 
@@ -38,11 +41,12 @@ object PojoGenerator {
 	}
 
 	def generateTableClz(table: Table): Unit = {
+		//generate a class named <tablenameData>.class
 		generateTupleClz(table)
 
 		val props = Map("records" -> classOf[java.util.List[_]])
 		val classTOGen: String = pojoPkg + "." + table.name
-
+//generate a class named <tablename>.class
 		Try(PojoGenUtil.generateListPojo(classTOGen, props)) match {
 			case Success(_)  =>
 			case Failure(ex) => LOGGER.error("PojoGenerator.generateListPojo error: " + ex.getMessage)
